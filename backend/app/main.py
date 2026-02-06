@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -11,13 +13,25 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Circle of Inevitability API")
 
 # CORS middleware - must be added before AuthMiddleware
+# Build origins list from environment variable + local development URLs
+cors_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+]
+
+# Add production frontend URL from environment variable
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    # Support comma-separated URLs for multiple frontends
+    for url in frontend_url.split(","):
+        url = url.strip()
+        if url and url not in cors_origins:
+            cors_origins.append(url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
