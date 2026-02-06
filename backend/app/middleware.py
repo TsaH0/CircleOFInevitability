@@ -1,6 +1,7 @@
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+
 from app.auth import verify_token
 
 
@@ -17,6 +18,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
         ]
 
     async def dispatch(self, request: Request, call_next):
+        # Let CORS preflight requests pass through to CORSMiddleware
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         path = request.url.path
 
         for excluded in self.excluded_paths:
