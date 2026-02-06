@@ -1,5 +1,5 @@
 from fastapi import Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.auth import verify_token
@@ -28,13 +28,27 @@ class AuthMiddleware(BaseHTTPMiddleware):
             if path.startswith(excluded):
                 return await call_next(request)
 
+        is_api_request = path.startswith("/api/")
+
         token = request.cookies.get("access_token")
 
         if not token:
+            if is_api_request:
+                return JSONResponse(
+                    status_code=401,
+                    content={"detail": "Not authenticated"},
+                )
             return RedirectResponse(url="/auth", status_code=302)
 
         payload = verify_token(token)
         if payload is None:
+            if is_api_request:
+                response = JSONResponse(
+                    status_code=401,
+                    content={"detail": "Invalid or expired token"},
+                )
+                response.delete_cookie("access_token")
+                return response
             response = RedirectResponse(url="/auth", status_code=302)
             response.delete_cookie("access_token")
             return response
