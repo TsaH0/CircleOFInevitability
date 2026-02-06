@@ -18,7 +18,7 @@ cors_origins = [
     "http://localhost:5173",
     "http://localhost:3000",
     "http://127.0.0.1:5173",
-    "https://circleofinevitability.onrender.com",
+    "https://circle-of-inevitability.vercel.app/",
 ]
 
 # Add production frontend URL from environment variable
